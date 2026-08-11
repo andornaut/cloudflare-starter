@@ -1,0 +1,9 @@
+node_modules/
+.svelte-kit/
+.wrangler/
+build/
+
+# Local secrets. Only .dev.vars.example is committed.
+.dev.vars
+.env
+.env.*

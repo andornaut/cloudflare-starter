@@ -6,10 +6,10 @@ This repo (`andornaut/cloudflare-starter`) is empty except for a LICENSE (MIT). 
 
 Two views over the same table:
 
-View | Route | Who | Can | Sees | Extent
---- | --- | --- | --- | --- | ---
-Public | `/` | anyone | add only | message + redacted email (`a***@example.com`) | newest 20, no pagination
-Admin | `/admin` | the one `admin` account | add, edit, delete | message + full email | every entry, paginated
+| View   | Route    | Who                     | Can               | Sees                                          | Extent                   |
+| ------ | -------- | ----------------------- | ----------------- | --------------------------------------------- | ------------------------ |
+| Public | `/`      | anyone                  | add only          | message + redacted email (`a***@example.com`) | newest 20, no pagination |
+| Admin  | `/admin` | the one `admin` account | add, edit, delete | message + full email                          | every entry, paginated   |
 
 The admin view is protected by a shared secret held in a Worker secret. The secret is never in the repo, never in the client bundle, and never sent to the browser.
 
@@ -22,12 +22,12 @@ The admin view is protected by a shared secret held in a Worker secret. The secr
 
 ## Free-tier fit (no paid services)
 
-Service | Free limit | Guestbook usage
---- | --- | ---
-Workers | 100k requests/day, 10 ms CPU/request | SSR + form posts — trivial
-D1 | 5 GB storage, 5M row reads/day, 100k row writes/day | One tiny table
-Static assets on Workers | Free, unmetered | JS/CSS bundles
-`<name>.workers.dev` subdomain | Free | No custom domain required
+| Service                        | Free limit                                          | Guestbook usage            |
+| ------------------------------ | --------------------------------------------------- | -------------------------- |
+| Workers                        | 100k requests/day, 10 ms CPU/request                | SSR + form posts — trivial |
+| D1                             | 5 GB storage, 5M row reads/day, 100k row writes/day | One tiny table             |
+| Static assets on Workers       | Free, unmetered                                     | JS/CSS bundles             |
+| `<name>.workers.dev` subdomain | Free                                                | No custom domain required  |
 
 Admin paging costs more row reads than the public page: `COUNT(*)` plus an `OFFSET` scan both read rows proportional to table size. At guestbook scale that is nowhere near the 5M/day free allowance, and only an authenticated admin can trigger it. A table large enough for it to matter wants keyset pagination (`WHERE (created_at, id) < (?, ?)`) instead, which is the noted extension.
 
@@ -65,13 +65,13 @@ One committed module is the single source for every non-secret value the app ren
 
 ```ts
 export const site = {
-  name: 'cloudflare-starter',
-  title: 'Hello, world - Cloudflare edge starter',
-  description: 'A SvelteKit + Cloudflare Workers + D1 starter with a guestbook.',
-  domain: '',            // canonical host, e.g. 'guestbook.example.com'; empty = derive from the request
-  entryLimit: 20,        // rows the public page lists, and the number in its heading
-  adminPageSize: 50,     // rows per page in the admin table
-  sessionTtlHours: 12,   // admin session lifetime
+	name: 'cloudflare-starter',
+	title: 'Hello, world - Cloudflare edge starter',
+	description: 'A SvelteKit + Cloudflare Workers + D1 starter with a guestbook.',
+	domain: '', // canonical host, e.g. 'guestbook.example.com'; empty = derive from the request
+	entryLimit: 20, // rows the public page lists, and the number in its heading
+	adminPageSize: 50, // rows per page in the admin table
+	sessionTtlHours: 12 // admin session lifetime
 } as const;
 ```
 
@@ -79,11 +79,11 @@ Consumers: the `<svelte:head>` title/description and canonical link in `src/rout
 
 The boundary, so "one place" stays true:
 
-Kind | Where | Why not in `config.ts`
---- | --- | ---
-Site metadata (title, description, domain, limits, page size, TTL) | `src/lib/config.ts` | -
-Cloudflare platform config (worker name, compatibility date, D1 binding, custom-domain route) | `wrangler.jsonc` | Wrangler reads it before the app builds and cannot import TypeScript.
-Secrets (`ADMIN_SECRET`) | Worker secret / `.dev.vars` | `config.ts` is committed.
+| Kind                                                                                          | Where                       | Why not in `config.ts`                                                |
+| --------------------------------------------------------------------------------------------- | --------------------------- | --------------------------------------------------------------------- |
+| Site metadata (title, description, domain, limits, page size, TTL)                            | `src/lib/config.ts`         | -                                                                     |
+| Cloudflare platform config (worker name, compatibility date, D1 binding, custom-domain route) | `wrangler.jsonc`            | Wrangler reads it before the app builds and cannot import TypeScript. |
+| Secrets (`ADMIN_SECRET`)                                                                      | Worker secret / `.dev.vars` | `config.ts` is committed.                                             |
 
 `domain` is metadata for canonical and Open Graph tags, not routing: the deployed origin is whatever Cloudflare serves, and the app reads `url.origin` for links when `domain` is empty. With a custom domain out of scope, the field ships empty and the route entry in `wrangler.jsonc` is the only thing to add later, which the README says.
 
@@ -169,34 +169,34 @@ Following the faramir convention of naming both halves:
 
 #### Prevented
 
-Failure | How
---- | ---
-**Stored XSS.** A message like `<script>alert(1)</script>`. | Output encoding: Svelte auto-escapes `{…}` expressions, so the payload renders as inert text. Never `{@html}` for user content. Store raw input, escape on output — no lossy input mangling.
-**SQL injection.** | D1 prepared statements with `.bind()` everywhere; no string-built SQL.
-**Client-side validation bypass.** | Server-side validation on every submission; client `required` attrs are UX only.
-**CSRF.** | SvelteKit's built-in origin check on form actions stays enabled.
-**Inline-script injection surviving a template mistake.** | Content-Security-Policy (`default-src 'self'`) set in a `handle` hook in `src/hooks.server.ts` — defense in depth behind the escaping, not a substitute for it.
-**Trivial spam bots.** | Honeypot form field; free, no external service.
-**The admin secret leaking to the client.** | `ADMIN_SECRET` is a Worker secret read only in server code (`.server.ts` files and `hooks.server.ts`), which SvelteKit refuses to import into client bundles. It is never returned from a `load`, never put in a cookie, and never echoed back into the login form.
-**The admin secret leaking through the repo.** | Set with `wrangler secret put`, not a `vars` entry in the committed `wrangler.jsonc`. Locally it comes from `.dev.vars`, which is gitignored; only `.dev.vars.example` with a placeholder is committed.
-**Guessing the secret by timing.** | Constant-time comparison in `verifySecret` and in the session HMAC check.
-**Forged admin sessions.** | The cookie carries an expiry plus an HMAC-SHA256 signature keyed by `ADMIN_SECRET`. Editing the expiry invalidates the signature; forging one requires the secret.
-**Session cookie theft via JavaScript or cross-site requests.** | `httpOnly`, `secure`, `sameSite: 'strict'`, `path: '/admin'`, so the cookie is unreadable from JS, not sent over plain HTTP, and not attached to cross-site navigations.
-**An unauthenticated request reaching an admin route.** | Gated on the `/admin` path prefix in `hooks.server.ts`, ahead of any `load` or action. A route added under `/admin` later is protected by where it sits.
-**Stale sessions outliving a rotated secret.** | The secret is the HMAC key, so `wrangler secret put ADMIN_SECRET` invalidates every outstanding session with no session store to clear.
-**Public exposure of stored emails.** | The public `load` returns only `redactEmail(...)` output. The full address is never selected into the page payload, so "view source" shows the mask, not the address.
-**Admin edits bypassing validation.** | Admin create and update run the same `validation.ts` as the public form.
-**Injection through `?page` or a row `id`.** | Both are parsed to integers and rejected if they are not positive integers, then bound with `.bind()`. `LIMIT`/`OFFSET` are bound parameters, never interpolated into the SQL string.
+| Failure                                                         | How                                                                                                                                                                                                                                                                 |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Stored XSS.** A message like `<script>alert(1)</script>`.     | Output encoding: Svelte auto-escapes `{…}` expressions, so the payload renders as inert text. Never `{@html}` for user content. Store raw input, escape on output — no lossy input mangling.                                                                        |
+| **SQL injection.**                                              | D1 prepared statements with `.bind()` everywhere; no string-built SQL.                                                                                                                                                                                              |
+| **Client-side validation bypass.**                              | Server-side validation on every submission; client `required` attrs are UX only.                                                                                                                                                                                    |
+| **CSRF.**                                                       | SvelteKit's built-in origin check on form actions stays enabled.                                                                                                                                                                                                    |
+| **Inline-script injection surviving a template mistake.**       | Content-Security-Policy (`default-src 'self'`) set in a `handle` hook in `src/hooks.server.ts` — defense in depth behind the escaping, not a substitute for it.                                                                                                     |
+| **Trivial spam bots.**                                          | Honeypot form field; free, no external service.                                                                                                                                                                                                                     |
+| **The admin secret leaking to the client.**                     | `ADMIN_SECRET` is a Worker secret read only in server code (`.server.ts` files and `hooks.server.ts`), which SvelteKit refuses to import into client bundles. It is never returned from a `load`, never put in a cookie, and never echoed back into the login form. |
+| **The admin secret leaking through the repo.**                  | Set with `wrangler secret put`, not a `vars` entry in the committed `wrangler.jsonc`. Locally it comes from `.dev.vars`, which is gitignored; only `.dev.vars.example` with a placeholder is committed.                                                             |
+| **Guessing the secret by timing.**                              | Constant-time comparison in `verifySecret` and in the session HMAC check.                                                                                                                                                                                           |
+| **Forged admin sessions.**                                      | The cookie carries an expiry plus an HMAC-SHA256 signature keyed by `ADMIN_SECRET`. Editing the expiry invalidates the signature; forging one requires the secret.                                                                                                  |
+| **Session cookie theft via JavaScript or cross-site requests.** | `httpOnly`, `secure`, `sameSite: 'strict'`, `path: '/admin'`, so the cookie is unreadable from JS, not sent over plain HTTP, and not attached to cross-site navigations.                                                                                            |
+| **An unauthenticated request reaching an admin route.**         | Gated on the `/admin` path prefix in `hooks.server.ts`, ahead of any `load` or action. A route added under `/admin` later is protected by where it sits.                                                                                                            |
+| **Stale sessions outliving a rotated secret.**                  | The secret is the HMAC key, so `wrangler secret put ADMIN_SECRET` invalidates every outstanding session with no session store to clear.                                                                                                                             |
+| **Public exposure of stored emails.**                           | The public `load` returns only `redactEmail(...)` output. The full address is never selected into the page payload, so "view source" shows the mask, not the address.                                                                                               |
+| **Admin edits bypassing validation.**                           | Admin create and update run the same `validation.ts` as the public form.                                                                                                                                                                                            |
+| **Injection through `?page` or a row `id`.**                    | Both are parsed to integers and rejected if they are not positive integers, then bound with `.bind()`. `LIMIT`/`OFFSET` are bound parameters, never interpolated into the SQL string.                                                                               |
 
 #### Not prevented
 
-Failure | Why
---- | ---
-**Determined spam / abuse.** | No CAPTCHA, rate limiting, or moderation. Out of scope for a starter; noted in the README as the first extension.
-**Brute force against `/admin/login`.** | No rate limiting or lockout. Cloudflare's free plan has no Rate Limiting rules, and a Worker-side counter needs KV or Durable Objects. The mitigation the README states is a long random secret (32+ bytes from a password manager), not a memorable one.
-**Email harvesting by the admin account.** | Redaction is a display choice on the public page. The full addresses are in D1 and on `/admin`; anyone with the secret has all of them.
-**Accountability for admin actions.** | One shared `admin` account, no per-user identity and no audit log, so an edit or delete cannot be attributed. Multi-user auth is the named extension.
-**Losing the secret.** | No recovery flow. `wrangler secret put ADMIN_SECRET` sets a new one; there is nothing else to reset.
+| Failure                                    | Why                                                                                                                                                                                                                                                       |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Determined spam / abuse.**               | No CAPTCHA, rate limiting, or moderation. Out of scope for a starter; noted in the README as the first extension.                                                                                                                                         |
+| **Brute force against `/admin/login`.**    | No rate limiting or lockout. Cloudflare's free plan has no Rate Limiting rules, and a Worker-side counter needs KV or Durable Objects. The mitigation the README states is a long random secret (32+ bytes from a password manager), not a memorable one. |
+| **Email harvesting by the admin account.** | Redaction is a display choice on the public page. The full addresses are in D1 and on `/admin`; anyone with the secret has all of them.                                                                                                                   |
+| **Accountability for admin actions.**      | One shared `admin` account, no per-user identity and no audit log, so an edit or delete cannot be attributed. Multi-user auth is the named extension.                                                                                                     |
+| **Losing the secret.**                     | No recovery flow. `wrangler secret put ADMIN_SECRET` sets a new one; there is nothing else to reset.                                                                                                                                                      |
 
 ### 8. Tests
 
