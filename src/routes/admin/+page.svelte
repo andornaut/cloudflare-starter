@@ -104,8 +104,11 @@
 								>{form?.id === entry.id ? (form?.values?.message ?? '') : entry.message}</textarea
 							>
 						</form>
-						{#if form?.id === entry.id && form?.errors}
-							<span class="error">{form.errors.email ?? form.errors.message}</span>
+						{#if form?.id === entry.id && form?.errors?.email}
+							<span class="error">{form.errors.email}</span>
+						{/if}
+						{#if form?.id === entry.id && form?.errors?.message}
+							<span class="error">{form.errors.message}</span>
 						{/if}
 					</td>
 					<td class="actions">

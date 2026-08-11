@@ -18,6 +18,8 @@ export interface GuestbookEntry {
 const LIST_SQL =
 	'SELECT id, email, message, created_at FROM guestbook_entries ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?';
 
+const COUNT_SQL = 'SELECT COUNT(*) AS n FROM guestbook_entries';
+
 export async function listEntries(
 	db: D1Database,
 	limit: number,
@@ -27,11 +29,28 @@ export async function listEntries(
 	return results ?? [];
 }
 
-export async function countEntries(db: D1Database): Promise<number> {
-	const row = await db
-		.prepare('SELECT COUNT(*) AS n FROM guestbook_entries')
-		.first<{ n: number }>();
-	return row?.n ?? 0;
+export interface EntryPage {
+	entries: GuestbookEntry[];
+	total: number;
+}
+
+/**
+ * The rows on a page and the total, in one batch that D1 sends as a single
+ * round trip. The offset is the caller's, because the total that decides the
+ * page count arrives with the rows rather than ahead of them.
+ *
+ * batch() types every statement in it the same, so each result is cast where it
+ * is read.
+ */
+export async function listPage(db: D1Database, limit: number, offset: number): Promise<EntryPage> {
+	const [page, count] = await db.batch([
+		db.prepare(LIST_SQL).bind(limit, offset),
+		db.prepare(COUNT_SQL)
+	]);
+	return {
+		entries: page.results as GuestbookEntry[],
+		total: (count.results[0] as { n: number } | undefined)?.n ?? 0
+	};
 }
 
 export async function addEntry(db: D1Database, email: string, message: string): Promise<void> {

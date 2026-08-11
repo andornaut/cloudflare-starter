@@ -10,10 +10,10 @@ cloudflare-starter is a [SvelteKit](https://svelte.dev/docs/kit) guestbook that 
 - Signed, expiring admin sessions with no session store to keep
 - Unit-tested [validation, pagination, redaction, and session code](#developing)
 
-| View   | Route    | Who                     | Can               | Sees                                       | Extent                 |
-| ------ | -------- | ----------------------- | ----------------- | ------------------------------------------ | ---------------------- |
-| Public | `/`      | anyone                  | add only          | message + redacted email (`a***@host.com`) | newest 20, no paging   |
-| Admin  | `/admin` | the one `admin` account | add, edit, delete | message + full email                       | every entry, paginated |
+| View   | Route    | Who                    | Can               | Sees                                       | Extent                 |
+| ------ | -------- | ---------------------- | ----------------- | ------------------------------------------ | ---------------------- |
+| Public | `/`      | anyone                 | add only          | message + redacted email (`a***@host.com`) | newest 20, no paging   |
+| Admin  | `/admin` | anyone with the secret | add, edit, delete | message + full email                       | every entry, paginated |
 
 ## Requirements
 
@@ -42,6 +42,8 @@ npm run dev
 
 The public page is at `/` and the admin sign-in at `/admin/login`.
 
+The session cookie is `Secure`, which Safari refuses to store over `http://localhost`. Sign in to the admin view with Chrome or Firefox when developing locally.
+
 ## Deploying
 
 ```bash
@@ -62,7 +64,7 @@ The Worker is then live at `https://cloudflare-starter.<account>.workers.dev`. T
 
 ## Admin access
 
-The account is `admin` and the secret is whatever `ADMIN_SECRET` holds. Generate a long random value and keep it in a password manager:
+Sign-in takes a secret and no username: whatever `ADMIN_SECRET` holds. Generate a long random value and keep it in a password manager:
 
 ```bash
 openssl rand -base64 32

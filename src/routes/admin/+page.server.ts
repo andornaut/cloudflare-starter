@@ -1,8 +1,8 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { site } from '$lib/config';
-import { paginate } from '$lib/paginate';
+import { pageOffset, paginate } from '$lib/paginate';
 import { parsePositiveInt, validateEntry } from '$lib/validation';
-import { addEntry, countEntries, deleteEntry, listEntries, updateEntry } from '$lib/server/db';
+import { addEntry, deleteEntry, listPage, updateEntry } from '$lib/server/db';
 import { SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from '$lib/server/session';
 import type { Actions, PageServerLoad, RequestEvent } from './$types';
 
@@ -52,9 +52,9 @@ export const load: PageServerLoad = async ({ url, platform }) => {
 		};
 	}
 
-	const total = await countEntries(db);
-	const { offset, pageCount, hasPrev, hasNext } = paginate(total, page, site.adminPageSize);
-	const entries = await listEntries(db, site.adminPageSize, offset);
+	const offset = pageOffset(page, site.adminPageSize);
+	const { entries, total } = await listPage(db, site.adminPageSize, offset);
+	const { pageCount, hasPrev, hasNext } = paginate(total, page, site.adminPageSize);
 
 	return { databaseMissing: false, entries, page, pageCount, total, hasPrev, hasNext };
 };

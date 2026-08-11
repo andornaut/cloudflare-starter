@@ -4,7 +4,14 @@ export const EMAIL_MAX_LENGTH = 254;
 /** Pragmatic format check, not RFC 5322: no spaces, one '@', a dotted domain. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
 
-/** Control characters other than newline. Tab and \r are rejected too. */
+/**
+ * Control characters other than newline. Tab and \r are rejected too.
+ *
+ * Applied to both fields. A newline is legitimate in a message, and EMAIL_PATTERN's
+ * \s already rejects one in an address, but the rest have to be caught here: a NUL
+ * truncates the value at the storage layer, so the row would hold something shorter
+ * than what was validated.
+ */
 // eslint-disable-next-line no-control-regex
 const DISALLOWED_CONTROL_CHARS = /[\u0000-\u0009\u000b-\u001f\u007f]/;
 
@@ -41,6 +48,8 @@ export function validateEntry(email: unknown, message: unknown): ValidationResul
 		errors.email = 'Email is required';
 	} else if (values.email.length > EMAIL_MAX_LENGTH) {
 		errors.email = `Email must be ${EMAIL_MAX_LENGTH} characters or fewer`;
+	} else if (DISALLOWED_CONTROL_CHARS.test(values.email)) {
+		errors.email = 'Email contains control characters';
 	} else if (!EMAIL_PATTERN.test(values.email)) {
 		errors.email = 'Email is not a valid address';
 	}

@@ -17,7 +17,10 @@ export default {
 		csp: {
 			mode: 'auto',
 			directives: {
-				'default-src': ['self']
+				'default-src': ['self'],
+				// frame-ancestors does not fall back to default-src, so it is named
+				// here and repeated in the hook's fallback policy.
+				'frame-ancestors': ['none']
 			}
 		}
 	}

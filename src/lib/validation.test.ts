@@ -36,6 +36,15 @@ describe('validateEntry', () => {
 		).toBeDefined();
 	});
 
+	// A NUL truncates the value at the storage layer, so a row would otherwise
+	// hold something shorter than what passed validation.
+	it('rejects control characters in an address', () => {
+		for (const code of [0, 9, 0x1f, 0x7f]) {
+			const email = `a${String.fromCharCode(code)}b@example.com`;
+			expect(validateEntry(email, 'hi').errors.email).toBe('Email contains control characters');
+		}
+	});
+
 	it('allows newlines but rejects other control characters', () => {
 		expect(validateEntry('a@example.com', 'line one\nline two').valid).toBe(true);
 		expect(validateEntry('a@example.com', 'null\u0000byte').errors.message).toBeDefined();
