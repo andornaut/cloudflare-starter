@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import { site } from '$lib/config';
 	import { EMAIL_MAX_LENGTH, MESSAGE_MAX_LENGTH } from '$lib/validation';
 	import type { PageProps } from './$types';
@@ -7,7 +8,7 @@
 	let { data, form }: PageProps = $props();
 </script>
 
-<h1>Hello, world - Cloudflare edge starter</h1>
+<h1>Hello, world - Cloudflare starter</h1>
 <p>{site.description}</p>
 
 <h2>Sign the guestbook</h2>
@@ -73,6 +74,12 @@
 	</ul>
 {/if}
 
+<!-- Points at /admin rather than the sign-in page, so an admin with a valid
+	session lands on the table and everyone else is redirected to sign in. -->
+<footer>
+	<a href={resolve('/admin')}>Admin</a>
+</footer>
+
 <style>
 	.honeypot {
 		position: absolute;
@@ -99,5 +106,12 @@
 
 	small {
 		color: #666;
+	}
+
+	footer {
+		margin-top: 2rem;
+		padding-top: 1rem;
+		border-top: 1px solid #e3e3e8;
+		font-size: 0.9rem;
 	}
 </style>

@@ -9,7 +9,7 @@
  */
 export const site = {
 	name: 'cloudflare-starter',
-	title: 'Hello, world - Cloudflare edge starter',
+	title: 'Hello, world - Cloudflare starter',
 	description: 'A SvelteKit + Cloudflare Workers + D1 starter with a guestbook.',
 	/** Canonical host, e.g. 'guestbook.example.com'. Empty derives it from the request. */
 	domain: '',
