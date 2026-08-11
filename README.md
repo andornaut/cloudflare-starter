@@ -1,6 +1,14 @@
 # cloudflare-starter
 
-A [SvelteKit](https://svelte.dev/docs/kit) starter that runs entirely on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with a [D1](https://developers.cloudflare.com/d1/) database: a hello-world home page with a guestbook, plus an admin view over the same entries.
+cloudflare-starter is a [SvelteKit](https://svelte.dev/docs/kit) guestbook that runs entirely on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with a [D1](https://developers.cloudflare.com/d1/) database, on free-tier services only
+
+## Features
+
+- Two views over one table: a public guestbook and an [admin view](#admin-access)
+- Server-rendered at the edge, and every form works without JavaScript
+- [Redacted email addresses](#what-it-protects-against) on the public page
+- Signed, expiring admin sessions with no session store to keep
+- Unit-tested [validation, pagination, redaction, and session code](#developing)
 
 | View   | Route    | Who                     | Can               | Sees                                       | Extent                 |
 | ------ | -------- | ----------------------- | ----------------- | ------------------------------------------ | ---------------------- |
@@ -9,10 +17,10 @@ A [SvelteKit](https://svelte.dev/docs/kit) starter that runs entirely on [Cloudf
 
 ## Requirements
 
-- Node 24 (see `.nvmrc`)
+- Node 24 (`.nvmrc`)
 - A free Cloudflare account
 
-Every service this uses is on the free plan:
+Every service used is on the free plan:
 
 | Service                        | Free limit                                          | Guestbook usage  |
 | ------------------------------ | --------------------------------------------------- | ---------------- |
@@ -24,6 +32,8 @@ Every service this uses is on the free plan:
 ## Usage
 
 ```bash
+git clone git@github.com:andornaut/cloudflare-starter.git
+cd cloudflare-starter
 npm install
 cp .dev.vars.example .dev.vars   # then put a real secret in it
 npm run migrate                  # applies migrations to the local D1 database
@@ -46,9 +56,9 @@ The Worker is then live at `https://cloudflare-starter.<account>.workers.dev`. T
 
 ## Configuration
 
-`src/lib/config.ts` is the one place for site metadata: title, description, canonical domain, the public entry limit, the admin page size, and the session TTL. The rendered text and the query limit it describes read the same field, so they cannot drift.
+`src/lib/config.ts` holds site metadata: title, description, canonical domain, the public entry limit, the admin page size, and the session lifetime. Rendered text and the query limit it describes read the same field, so a limit cannot change in one place only.
 
-`wrangler.jsonc` holds Cloudflare platform config (Worker name, compatibility date, the `DB` binding). Secrets are in neither file.
+`wrangler.jsonc` holds Cloudflare platform config: Worker name, compatibility date, and the `DB` binding. Secrets are in neither file.
 
 ## Admin access
 
@@ -58,55 +68,78 @@ The account is `admin` and the secret is whatever `ADMIN_SECRET` holds. Generate
 openssl rand -base64 32
 ```
 
-Rotate it with `npx wrangler secret put ADMIN_SECRET`, which signs out every open session, since the secret is also the key the session cookie is signed with. Never commit it, and never put it in `wrangler.jsonc`, which is committed.
+Rotate it with `npx wrangler secret put ADMIN_SECRET`. That signs out every open session, because the secret is also the key the session cookie is signed with. Never commit it, and never put it in `wrangler.jsonc`, which is committed.
+
+## What it protects against
+
+### Prevented
+
+| Failure                                                         | How                                                                                                                                                        |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Stored XSS.** A message like `<script>alert(1)</script>`.     | Output encoding. Svelte escapes `{...}` expressions, so the payload renders as inert text. Input is stored raw and escaped on render, never via `{@html}`. |
+| **SQL injection.**                                              | D1 prepared statements with `.bind()` everywhere, including `LIMIT` and `OFFSET`. No string-built SQL.                                                     |
+| **Client-side validation bypass.**                              | Server-side validation on every submission. The `required` attributes are UX only.                                                                         |
+| **CSRF.**                                                       | SvelteKit's origin check on form actions.                                                                                                                  |
+| **Inline-script injection surviving a template mistake.**       | `Content-Security-Policy: default-src 'self'`, with a per-response nonce on `script-src` so only SvelteKit's own hydration script runs.                    |
+| **Trivial spam bots.**                                          | A honeypot field. Free, and no external service.                                                                                                           |
+| **The admin secret reaching the client.**                       | It is read only in server modules, never returned from a `load`, never put in a cookie, and never echoed back into the login form.                         |
+| **The admin secret reaching the repo.**                         | It is a Worker secret, not a `vars` entry. Locally it comes from `.dev.vars`, which is gitignored; only `.dev.vars.example` is committed.                  |
+| **Guessing the secret by timing.**                              | Constant-time comparison of fixed-length digests, in both the login check and the session signature check.                                                 |
+| **Forged admin sessions.**                                      | The cookie carries an expiry plus an HMAC-SHA256 signature keyed by the secret. Editing the expiry invalidates the signature.                              |
+| **Session cookie theft via JavaScript or cross-site requests.** | `httpOnly`, `secure`, `sameSite=strict`, and scoped to `/admin`.                                                                                           |
+| **An unauthenticated request reaching an admin route.**         | Gated on the `/admin` path prefix in `src/hooks.server.ts`, ahead of any `load` or action, so a route added there later is protected by where it sits.     |
+| **Stale sessions outliving a rotated secret.**                  | The secret is the HMAC key, so rotating it invalidates every outstanding session with no session store to clear.                                           |
+| **Public exposure of stored emails.**                           | The public `load` returns only redacted addresses, so the full value never reaches the page payload.                                                       |
+| **Admin edits bypassing validation.**                           | Admin create and update run the same validation as the public form.                                                                                        |
+
+`style-src` keeps `'unsafe-inline'`, which SvelteKit needs for the critical CSS it inlines during server rendering. Scripts stay nonce-restricted.
+
+### Not prevented
+
+| Failure                                    | Why                                                                                                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Determined spam or abuse.**              | No CAPTCHA, rate limiting, or moderation queue. Out of scope for a starter.                                                                                   |
+| **Brute force against `/admin/login`.**    | The free plan has no Rate Limiting rules, and a Worker-side counter needs KV or Durable Objects. The mitigation is a long random secret, not a memorable one. |
+| **Email harvesting by the admin account.** | Redaction is a display choice on the public page. The full addresses are in D1 and on `/admin`, so anyone with the secret has all of them.                    |
+| **Accountability for admin actions.**      | One shared account, no per-user identity, and no audit log, so an edit or a deletion cannot be attributed.                                                    |
+| **Losing the secret.**                     | No recovery flow. Set a new one; there is nothing else to reset.                                                                                              |
 
 ## Developing
 
-| Script            | What it does                                   |
-| ----------------- | ---------------------------------------------- |
-| `npm run dev`     | Vite dev server with a local D1 database       |
-| `npm run build`   | Builds the Worker to `.svelte-kit/cloudflare/` |
-| `npm run preview` | Builds, then serves it through `wrangler dev`  |
-| `npm run check`   | `svelte-check` type checking                   |
-| `npm run lint`    | Prettier check and ESLint                      |
-| `npm run format`  | Rewrites files with Prettier                   |
-| `npm test`        | Vitest unit suite                              |
-| `npm run migrate` | Applies `migrations/` to the local D1 database |
-| `npm run deploy`  | Builds and deploys with Wrangler               |
-| `npm run clean`   | Removes build and Wrangler state               |
+```bash
+# Type check with svelte-check
+npm run check
 
-Run one test file with `npx vitest run src/lib/paginate.test.ts`.
+# Prettier check and ESLint
+npm run lint
 
-The suite is unit tests only: the pure functions (`validation.ts`, `paginate.ts`, `redact.ts`) and the Web Crypto session code (`server/auth.ts`). The route handlers, the `/admin` gate, and the D1 queries are covered by the manual verification pass in `plan.md`, not by an automated suite.
+# Rewrite files with Prettier
+npm run format
 
-## Security
+# Run the unit tests
+npm test
 
-Prevented:
+# Run a single test file
+npx vitest run src/lib/paginate.test.ts
 
-- **Stored XSS** by output encoding: Svelte escapes `{...}` expressions, and user content never goes through `{@html}`. Input is stored raw and escaped on render.
-- **SQL injection** by prepared statements with `.bind()` everywhere, including `LIMIT` and `OFFSET`.
-- **Client-side validation bypass** by validating every submission on the server, with the same rules for the public form and admin edits.
-- **CSRF** by SvelteKit's origin check on form actions.
-- **Inline-script injection surviving a template mistake** by `Content-Security-Policy: default-src 'self'`, with SvelteKit adding a per-response nonce to `script-src` so only its own hydration script runs. `style-src` keeps `'unsafe-inline'`, which SvelteKit needs for the critical CSS it inlines during SSR.
-- **Trivial spam bots** by a honeypot field.
-- **The admin secret leaking** to the client (it is read only in server modules, never returned from a `load`, never echoed into the form) or through the repo (it is a Worker secret, and `.dev.vars` is gitignored).
-- **Guessing the secret by timing** with constant-time comparison in both the login check and the session HMAC check.
-- **Forged or stolen admin sessions** with an HMAC-SHA256 signed expiry, and a cookie that is `httpOnly`, `secure`, `sameSite=strict`, and scoped to `/admin`.
-- **Unauthenticated requests reaching an admin route** by gating on the `/admin` path prefix in `src/hooks.server.ts`, ahead of any `load` or action.
-- **Public exposure of stored emails** by redacting in the `load`, so the full address never reaches the page payload.
+# Build the Worker to .svelte-kit/cloudflare/
+npm run build
 
-Not prevented, and the first things to add:
+# Build, then serve it through wrangler dev
+npm run preview
 
-- **Determined spam or abuse.** No CAPTCHA, rate limiting, or moderation queue.
-- **Brute force against `/admin/login`.** The free plan has no Rate Limiting rules and a Worker-side counter needs KV or Durable Objects. The mitigation is a long random secret, not a memorable one.
-- **Email harvesting by the admin account.** Redaction is a display choice on the public page; anyone with the secret has every address.
-- **Accountability for admin actions.** One shared account, no per-user identity and no audit log.
-- **Losing the secret.** There is no recovery flow; set a new one.
+# Remove build and Wrangler state
+npm run clean
+```
+
+Check, lint, test, and build are what CI runs, over the whole repository rather than the lines a change touched.
+
+The suite is unit tests only: the pure functions in `validation.ts`, `paginate.ts`, and `redact.ts`, plus the Web Crypto session code in `server/auth.ts`. The route handlers, the `/admin` gate, and the D1 queries are checked by hand against a dev server.
 
 ## Extensions
 
-Custom domain, multi-user auth with an audit log, a moderation queue, keyset pagination and search on the admin table, and pagination on the public page.
+A custom domain, multi-user auth with an audit log, a moderation queue, keyset pagination and search on the admin table, and pagination on the public page.
 
 ## License
 
-[MIT](./LICENSE)
+MIT
