@@ -47,7 +47,7 @@ Carried over from the sibling repos (`faramir`, `filectrl`, `ansible-ctrl`, `ai-
   - `ai-attributions.yml` — the account-standard scan (`andornaut/ai-attributions@v1`), on push to every branch, pull requests, and dispatch, matching the copy in every sibling repo.
 - **`.github/dependabot.yml`** — weekly `npm` and `github-actions` updates with `cooldown: default-days: 7`, as in filectrl.
 - **`.markdownlint.json`** — disable `line-length` and `no-inline-html`, as in filectrl.
-- **`.nvmrc`** pinning Node 22 (current LTS), so nvm/fnm — and ai-maintainer's toolchain detection — resolve the right runtime.
+- **`.nvmrc`** pinning Node 24 (current LTS), so nvm/fnm — and ai-maintainer's toolchain detection — resolve the right runtime.
 - **Fail loudly.** Invalid input returns a 400 with field errors; a missing D1 binding renders the page with an explicit notice rather than a blank list; nothing is silently ignored.
 
 ## Implementation steps
@@ -200,7 +200,7 @@ Following the faramir convention of naming both halves:
 
 ### 8. Tests
 
-Unit tests only. No integration or end-to-end suite: no `@cloudflare/vitest-pool-workers`, no Miniflare harness, no Playwright, no test that starts the app or opens a browser. Everything under test is a pure function or a Web Crypto call that Node 22 provides natively, so the suite is plain Vitest in a node environment.
+Unit tests only. No integration or end-to-end suite: no `@cloudflare/vitest-pool-workers`, no Miniflare harness, no Playwright, no test that starts the app or opens a browser. Everything under test is a pure function or a Web Crypto call that Node 24 provides natively, so the suite is plain Vitest in a node environment.
 
 - `validation.ts`: valid/invalid emails, length limits, control characters, and XSS-payload strings passing through untouched — escaping is output's job, and a test asserting the payload survives validation documents that.
 - `paginate.ts`: first, middle, and last page offsets; `hasPrev`/`hasNext` at both ends; a total that divides evenly by the page size (no phantom trailing page); a total of 0 (`pageCount` 1, both flags false); a page past the last (offset past the end, `hasNext` false).
@@ -215,7 +215,7 @@ The route handlers, the hooks gate, and the D1 queries are covered by the one-ti
 Structured like the sibling READMEs — terse opening sentence, then Installation / Usage / Developing:
 
 - One-sentence description linking SvelteKit, Cloudflare Workers, and D1, and naming the two views.
-- **Requirements**: Node 22 (`.nvmrc`), a free Cloudflare account.
+- **Requirements**: Node 24 (`.nvmrc`), a free Cloudflare account.
 - **Usage** (local): `npm install` → `cp .dev.vars.example .dev.vars` and put a real secret in it → `npm run migrate` (applies migrations locally) → `npm run dev`. Public page at `/`, admin at `/admin`.
 - **Deploying**: `npx wrangler login` → `npx wrangler d1 create guestbook-db` → paste `database_id` into `wrangler.jsonc` → `npx wrangler d1 migrations apply guestbook-db --remote` → `npx wrangler secret put ADMIN_SECRET` → `npm run deploy` → live at `https://cloudflare-starter.<account>.workers.dev`.
 - **Configuration**: `src/lib/config.ts` is the one place for site metadata (title, description, domain, public entry limit, admin page size, session TTL). `wrangler.jsonc` holds Cloudflare platform config; secrets are neither.

@@ -9,7 +9,7 @@ A [SvelteKit](https://svelte.dev/docs/kit) starter that runs entirely on [Cloudf
 
 ## Requirements
 
-- Node 22 (see `.nvmrc`)
+- Node 24 (see `.nvmrc`)
 - A free Cloudflare account
 
 Every service this uses is on the free plan:
