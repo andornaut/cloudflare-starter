@@ -24,7 +24,7 @@
 <style>
 	:global(body) {
 		margin: 0;
-		background: #fbfbfd;
+		background: #e8f5e9;
 		color: #1a1a1a;
 		font-family: system-ui, sans-serif;
 		line-height: 1.5;
