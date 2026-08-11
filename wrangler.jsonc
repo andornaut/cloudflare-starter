@@ -10,10 +10,12 @@
 	},
 	"d1_databases": [
 		{
+			// The app reads platform.env.DB, so the binding name is part of the
+			// code. A fork replaces database_id with the one its own
+			// `npx wrangler d1 create guestbook-db` prints.
 			"binding": "DB",
 			"database_name": "guestbook-db",
-			// Replace with the id printed by `npx wrangler d1 create guestbook-db`.
-			"database_id": "00000000-0000-0000-0000-000000000000"
+			"database_id": "276030c4-650d-4779-a99b-e55e3167877d"
 		}
 	],
 	"observability": {
