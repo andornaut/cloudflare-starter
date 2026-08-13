@@ -5,7 +5,7 @@ name: Test
 # that runs after the fact.
 on:
   push:
-    branches: ["**"]
+    branches: ['**']
   pull_request:
   workflow_dispatch:
 
