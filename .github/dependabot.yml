@@ -7,10 +7,10 @@ updates:
     cooldown:
       default-days: 7
     ignore:
-      # TODO: remove this ignore once @sveltejs/kit's peer range accepts
-      # typescript 7. It caps at ^5.3.3 || ^6.0.0, and 2.70.2 is the newest it
-      # publishes, so 7 fails npm ci; kit's own move to 7 is
-      # https://github.com/sveltejs/kit/pull/16351, closed unmerged.
+      # WORKAROUND: @sveltejs/kit's peer range does not accept typescript 7. It
+      # caps at ^5.3.3 || ^6.0.0, and 2.70.2 is the newest it publishes, so 7
+      # fails npm ci. Remove this ignore once kit widens the range; its own move
+      # to 7 is https://github.com/sveltejs/kit/pull/16351, closed unmerged.
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
