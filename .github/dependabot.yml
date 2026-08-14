@@ -6,6 +6,11 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+    ignore:
+      # typescript 7 fails npm ci: @sveltejs/kit caps its peer at ^5.3.3 || ^6.0.0,
+      # and 2.70.2 is the newest it publishes. Drop this once kit accepts 7.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
