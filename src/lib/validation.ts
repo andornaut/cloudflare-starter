@@ -62,7 +62,7 @@ export function validateEntry(email: unknown, message: unknown): ValidationResul
 		errors.message = 'Message contains control characters';
 	}
 
-	return { values, errors, valid: Object.keys(errors).length === 0 };
+	return { errors, valid: Object.keys(errors).length === 0, values };
 }
 
 /**

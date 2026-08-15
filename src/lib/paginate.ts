@@ -27,8 +27,8 @@ export function pageOffset(page: number, pageSize: number): number {
 export function paginate(total: number, page: number, pageSize: number): Pagination {
 	const pageCount = Math.max(1, Math.ceil(total / pageSize));
 	return {
-		pageCount,
+		hasNext: page < pageCount,
 		hasPrev: page > 1,
-		hasNext: page < pageCount
+		pageCount
 	};
 }

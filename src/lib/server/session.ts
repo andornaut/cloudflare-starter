@@ -8,11 +8,11 @@ export const SESSION_COOKIE = 'admin_session';
  * sameSite strict keeps it off cross-site navigations.
  */
 export const SESSION_COOKIE_OPTIONS = {
-	path: '/admin',
 	httpOnly: true,
-	secure: true,
+	maxAge: site.sessionTtlHours * 60 * 60,
+	path: '/admin',
 	sameSite: 'strict',
-	maxAge: site.sessionTtlHours * 60 * 60
+	secure: true
 } as const;
 
 export const SESSION_TTL_MS = site.sessionTtlHours * 60 * 60 * 1000;

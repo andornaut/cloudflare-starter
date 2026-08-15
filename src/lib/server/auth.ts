@@ -55,7 +55,7 @@ async function hmac(secret: string, payload: string): Promise<Uint8Array> {
 	const key = await crypto.subtle.importKey(
 		'raw',
 		encoder.encode(secret),
-		{ name: 'HMAC', hash: 'SHA-256' },
+		{ hash: 'SHA-256', name: 'HMAC' },
 		false,
 		['sign']
 	);

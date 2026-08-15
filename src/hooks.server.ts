@@ -1,4 +1,5 @@
-import { redirect, type Handle } from '@sveltejs/kit';
+import { type Handle, redirect } from '@sveltejs/kit';
+
 import { verifySession } from '$lib/server/auth';
 import { SESSION_COOKIE } from '$lib/server/session';
 

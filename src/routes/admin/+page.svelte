@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { site } from '$lib/config';
 	import { EMAIL_MAX_LENGTH, MESSAGE_MAX_LENGTH } from '$lib/validation';
+
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();

@@ -1,9 +1,11 @@
 import { error, fail, redirect } from '@sveltejs/kit';
+
 import { site } from '$lib/config';
 import { pageOffset, paginate } from '$lib/paginate';
-import { parsePositiveInt, validateEntry } from '$lib/validation';
 import { addEntry, deleteEntry, listPage, updateEntry } from '$lib/server/db';
 import { SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from '$lib/server/session';
+import { parsePositiveInt, validateEntry } from '$lib/validation';
+
 import type { Actions, PageServerLoad, RequestEvent } from './$types';
 
 /**
@@ -37,26 +39,26 @@ function backToPage(form: FormData) {
 	redirect(303, `/admin?page=${page}`);
 }
 
-export const load: PageServerLoad = async ({ url, platform }) => {
+export const load: PageServerLoad = async ({ platform, url }) => {
 	const page = requirePage(url);
 	const db = platform?.env?.DB;
 	if (!db) {
 		return {
 			databaseMissing: true,
 			entries: [],
+			hasNext: false,
+			hasPrev: false,
 			page,
 			pageCount: 1,
-			total: 0,
-			hasPrev: false,
-			hasNext: false
+			total: 0
 		};
 	}
 
 	const offset = pageOffset(page, site.adminPageSize);
 	const { entries, total } = await listPage(db, site.adminPageSize, offset);
-	const { pageCount, hasPrev, hasNext } = paginate(total, page, site.adminPageSize);
+	const { hasNext, hasPrev, pageCount } = paginate(total, page, site.adminPageSize);
 
-	return { databaseMissing: false, entries, page, pageCount, total, hasPrev, hasNext };
+	return { databaseMissing: false, entries, hasNext, hasPrev, page, pageCount, total };
 };
 
 async function upsert(event: RequestEvent, mode: 'create' | 'update') {
@@ -73,9 +75,9 @@ async function upsert(event: RequestEvent, mode: 'create' | 'update') {
 
 	// The same validation as the public form, so an admin edit cannot store what
 	// a public submission could not.
-	const { values, errors, valid } = validateEntry(form.get('email'), form.get('message'));
+	const { errors, valid, values } = validateEntry(form.get('email'), form.get('message'));
 	if (!valid) {
-		return fail(400, { values, errors, id });
+		return fail(400, { errors, id, values });
 	}
 
 	if (mode === 'create') {
@@ -92,7 +94,6 @@ async function upsert(event: RequestEvent, mode: 'create' | 'update') {
 
 export const actions: Actions = {
 	create: (event) => upsert(event, 'create'),
-	update: (event) => upsert(event, 'update'),
 
 	delete: async (event) => {
 		const db = requireDb(event.platform);
@@ -110,5 +111,7 @@ export const actions: Actions = {
 	logout: async ({ cookies }) => {
 		cookies.delete(SESSION_COOKIE, { path: SESSION_COOKIE_OPTIONS.path });
 		redirect(303, '/admin/login');
-	}
+	},
+
+	update: (event) => upsert(event, 'update')
 };

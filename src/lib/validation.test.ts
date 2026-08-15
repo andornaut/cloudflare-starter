@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import {
 	EMAIL_MAX_LENGTH,
 	MESSAGE_MAX_LENGTH,

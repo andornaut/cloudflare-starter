@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { signSession, verifySecret, verifySession } from './auth';
 
 const SECRET = 'correct-horse-battery-staple';

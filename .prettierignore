@@ -4,3 +4,8 @@
 build/
 node_modules/
 package-lock.json
+
+# Shared verbatim with every other JavaScript repository here, and this one
+# formats with tabs and single quotes where they use the prettier defaults.
+# Formatting it locally would break the byte-identity the sweep compares.
+eslint.config.base.mjs

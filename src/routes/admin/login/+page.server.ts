@@ -1,10 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
+
 import { signSession, verifySecret } from '$lib/server/auth';
 import { SESSION_COOKIE, SESSION_COOKIE_OPTIONS, SESSION_TTL_MS } from '$lib/server/session';
+
 import type { Actions } from './$types';
 
 export const actions: Actions = {
-	default: async ({ request, cookies, platform }) => {
+	default: async ({ cookies, platform, request }) => {
 		const secret = platform?.env?.ADMIN_SECRET ?? '';
 		if (!secret) {
 			// Fail loudly rather than authenticating anyone against an unset secret.
