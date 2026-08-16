@@ -3,7 +3,7 @@
 
 	import type { PageProps } from './$types';
 
-	let { form }: PageProps = $props();
+	const { form }: PageProps = $props();
 </script>
 
 <svelte:head>

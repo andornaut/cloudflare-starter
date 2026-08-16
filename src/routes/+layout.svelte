@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { site } from '$lib/config';
 
-	let { children } = $props();
+	const { children } = $props();
 
 	// site.domain is metadata for the canonical link, not routing. Empty means
 	// derive it from the request, which is what a workers.dev deploy wants.

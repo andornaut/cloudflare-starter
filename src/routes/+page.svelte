@@ -6,7 +6,7 @@
 
 	import type { PageProps } from './$types';
 
-	let { data, form }: PageProps = $props();
+	const { data, form }: PageProps = $props();
 </script>
 
 <h1>Hello, world - Cloudflare starter</h1>
