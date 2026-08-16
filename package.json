@@ -5,6 +5,9 @@
 	"license": "MIT",
 	"private": true,
 	"type": "module",
+	"engines": {
+		"node": ">=24.13.1"
+	},
 	"scripts": {
 		"prepare": "svelte-kit sync",
 		"dev": "vite dev",
