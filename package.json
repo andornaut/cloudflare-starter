@@ -11,7 +11,7 @@
 		"build": "vite build",
 		"preview": "npm run build && wrangler dev",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"lint": "prettier --check . && eslint .",
+		"lint": "prettier --check . && eslint --max-warnings 0 .",
 		"format": "prettier --write .",
 		"test": "vitest run",
 		"migrate": "wrangler d1 migrations apply guestbook-db --local",
