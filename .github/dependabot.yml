@@ -6,6 +6,10 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+    # @sveltejs/kit holds a second dependency back as well: it requires cookie
+    # ^0.6.0, and the patched 0.7.0 falls outside that range, so a standing
+    # Dependabot alert on cookie cannot be closed from here either. The copy
+    # youch resolves is 1.1.1 and is not affected.
     ignore:
       # WORKAROUND: @sveltejs/kit's peer range does not accept typescript 7. It
       # caps at ^5.3.3 || ^6.0.0, and 2.70.2 is the newest it publishes, so 7
