@@ -1,10 +1,10 @@
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database } from "@cloudflare/workers-types";
 
 export interface GuestbookEntry {
-	id: number;
-	email: string;
-	message: string;
-	created_at: string;
+  id: number;
+  email: string;
+  message: string;
+  created_at: string;
 }
 
 /**
@@ -16,22 +16,25 @@ export interface GuestbookEntry {
  * queries, which on an offset scan drops or repeats a row at a page boundary.
  */
 const LIST_SQL =
-	'SELECT id, email, message, created_at FROM guestbook_entries ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?';
+  "SELECT id, email, message, created_at FROM guestbook_entries ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?";
 
-const COUNT_SQL = 'SELECT COUNT(*) AS n FROM guestbook_entries';
+const COUNT_SQL = "SELECT COUNT(*) AS n FROM guestbook_entries";
 
 export async function listEntries(
-	db: D1Database,
-	limit: number,
-	offset = 0
+  db: D1Database,
+  limit: number,
+  offset = 0,
 ): Promise<GuestbookEntry[]> {
-	const { results } = await db.prepare(LIST_SQL).bind(limit, offset).all<GuestbookEntry>();
-	return results ?? [];
+  const { results } = await db
+    .prepare(LIST_SQL)
+    .bind(limit, offset)
+    .all<GuestbookEntry>();
+  return results ?? [];
 }
 
 export interface EntryPage {
-	entries: GuestbookEntry[];
-	total: number;
+  entries: GuestbookEntry[];
+  total: number;
 }
 
 /**
@@ -42,22 +45,30 @@ export interface EntryPage {
  * batch() types every statement in it the same, so each result is cast where it
  * is read.
  */
-export async function listPage(db: D1Database, limit: number, offset: number): Promise<EntryPage> {
-	const [page, count] = await db.batch([
-		db.prepare(LIST_SQL).bind(limit, offset),
-		db.prepare(COUNT_SQL)
-	]);
-	return {
-		entries: page.results as GuestbookEntry[],
-		total: (count.results[0] as { n: number } | undefined)?.n ?? 0
-	};
+export async function listPage(
+  db: D1Database,
+  limit: number,
+  offset: number,
+): Promise<EntryPage> {
+  const [page, count] = await db.batch([
+    db.prepare(LIST_SQL).bind(limit, offset),
+    db.prepare(COUNT_SQL),
+  ]);
+  return {
+    entries: page.results as GuestbookEntry[],
+    total: (count.results[0] as { n: number } | undefined)?.n ?? 0,
+  };
 }
 
-export async function addEntry(db: D1Database, email: string, message: string): Promise<void> {
-	await db
-		.prepare('INSERT INTO guestbook_entries (email, message) VALUES (?, ?)')
-		.bind(email, message)
-		.run();
+export async function addEntry(
+  db: D1Database,
+  email: string,
+  message: string,
+): Promise<void> {
+  await db
+    .prepare("INSERT INTO guestbook_entries (email, message) VALUES (?, ?)")
+    .bind(email, message)
+    .run();
 }
 
 /**
@@ -65,20 +76,26 @@ export async function addEntry(db: D1Database, email: string, message: string): 
  * an entry does not move it in the list. Returns whether a row matched.
  */
 export async function updateEntry(
-	db: D1Database,
-	id: number,
-	email: string,
-	message: string
+  db: D1Database,
+  id: number,
+  email: string,
+  message: string,
 ): Promise<boolean> {
-	const result = await db
-		.prepare('UPDATE guestbook_entries SET email = ?, message = ? WHERE id = ?')
-		.bind(email, message, id)
-		.run();
-	return (result.meta?.changes ?? 0) > 0;
+  const result = await db
+    .prepare("UPDATE guestbook_entries SET email = ?, message = ? WHERE id = ?")
+    .bind(email, message, id)
+    .run();
+  return (result.meta?.changes ?? 0) > 0;
 }
 
 /** Returns whether a row matched, so deleting a deleted id reports "not found". */
-export async function deleteEntry(db: D1Database, id: number): Promise<boolean> {
-	const result = await db.prepare('DELETE FROM guestbook_entries WHERE id = ?').bind(id).run();
-	return (result.meta?.changes ?? 0) > 0;
+export async function deleteEntry(
+  db: D1Database,
+  id: number,
+): Promise<boolean> {
+  const result = await db
+    .prepare("DELETE FROM guestbook_entries WHERE id = ?")
+    .bind(id)
+    .run();
+  return (result.meta?.changes ?? 0) > 0;
 }

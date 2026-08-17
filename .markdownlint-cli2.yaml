@@ -12,7 +12,7 @@
 gitignore: true
 
 globs:
-  - '**/*.md'
+  - "**/*.md"
 
 # Read alongside gitignore above, which does not cover everything the checkout
 # leaves out. A submodule is tracked as a commit rather than as files, so CI
@@ -27,9 +27,9 @@ globs:
 # the ones in the tree. So CI, which checks out tracked files, never sees them,
 # while a working copy holds them and would report findings the gate cannot.
 ignores:
-  - '**/node_modules/**'
-  - '.agents/**'
-  - '.claude/**'
+  - "**/node_modules/**"
+  - ".agents/**"
+  - ".claude/**"
   - AGENTS.md
   - CLAUDE.md
   - GEMINI.md

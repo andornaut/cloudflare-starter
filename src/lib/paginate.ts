@@ -1,7 +1,7 @@
 export interface Pagination {
-	pageCount: number;
-	hasPrev: boolean;
-	hasNext: boolean;
+  pageCount: number;
+  hasPrev: boolean;
+  hasNext: boolean;
 }
 
 /**
@@ -13,7 +13,7 @@ export interface Pagination {
  * quietly landing somewhere else.
  */
 export function pageOffset(page: number, pageSize: number): number {
-	return (page - 1) * pageSize;
+  return (page - 1) * pageSize;
 }
 
 /**
@@ -24,11 +24,15 @@ export function pageOffset(page: number, pageSize: number): number {
  * "of 0". A page past the last one reports hasNext false, matching the offset
  * pageOffset leaves past the end.
  */
-export function paginate(total: number, page: number, pageSize: number): Pagination {
-	const pageCount = Math.max(1, Math.ceil(total / pageSize));
-	return {
-		hasNext: page < pageCount,
-		hasPrev: page > 1,
-		pageCount
-	};
+export function paginate(
+  total: number,
+  page: number,
+  pageSize: number,
+): Pagination {
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  return {
+    hasNext: page < pageCount,
+    hasPrev: page > 1,
+    pageCount,
+  };
 }

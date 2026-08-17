@@ -10,18 +10,20 @@
 const encoder = new TextEncoder();
 
 function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
-	if (a.length !== b.length) {
-		return false;
-	}
-	let diff = 0;
-	for (let i = 0; i < a.length; i++) {
-		diff |= a[i] ^ b[i];
-	}
-	return diff === 0;
+  if (a.length !== b.length) {
+    return false;
+  }
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a[i] ^ b[i];
+  }
+  return diff === 0;
 }
 
 async function digest(value: string): Promise<Uint8Array> {
-	return new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(value)));
+  return new Uint8Array(
+    await crypto.subtle.digest("SHA-256", encoder.encode(value)),
+  );
 }
 
 /**
@@ -32,42 +34,53 @@ async function digest(value: string): Promise<Uint8Array> {
  * An unset secret authenticates nobody, so a missing binding cannot compare
  * equal to an empty submission.
  */
-export async function verifySecret(expected: string, submitted: string): Promise<boolean> {
-	if (!expected) {
-		return false;
-	}
-	const [expectedDigest, submittedDigest] = await Promise.all([
-		digest(expected),
-		digest(submitted)
-	]);
-	return timingSafeEqual(expectedDigest, submittedDigest);
+export async function verifySecret(
+  expected: string,
+  submitted: string,
+): Promise<boolean> {
+  if (!expected) {
+    return false;
+  }
+  const [expectedDigest, submittedDigest] = await Promise.all([
+    digest(expected),
+    digest(submitted),
+  ]);
+  return timingSafeEqual(expectedDigest, submittedDigest);
 }
 
 function base64url(bytes: Uint8Array): string {
-	let binary = '';
-	for (const byte of bytes) {
-		binary += String.fromCharCode(byte);
-	}
-	return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary)
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replace(/=+$/, "");
 }
 
 async function hmac(secret: string, payload: string): Promise<Uint8Array> {
-	const key = await crypto.subtle.importKey(
-		'raw',
-		encoder.encode(secret),
-		{ hash: 'SHA-256', name: 'HMAC' },
-		false,
-		['sign']
-	);
-	return new Uint8Array(await crypto.subtle.sign('HMAC', key, encoder.encode(payload)));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { hash: "SHA-256", name: "HMAC" },
+    false,
+    ["sign"],
+  );
+  return new Uint8Array(
+    await crypto.subtle.sign("HMAC", key, encoder.encode(payload)),
+  );
 }
 
 /**
  * Session cookie value: `<expiresAt>.<base64url HMAC-SHA256 of expiresAt>`.
  * The secret is the key and never appears in the cookie.
  */
-export async function signSession(secret: string, expiresAt: number): Promise<string> {
-	return `${expiresAt}.${base64url(await hmac(secret, String(expiresAt)))}`;
+export async function signSession(
+  secret: string,
+  expiresAt: number,
+): Promise<string> {
+  return `${expiresAt}.${base64url(await hmac(secret, String(expiresAt)))}`;
 }
 
 /**
@@ -75,25 +88,25 @@ export async function signSession(secret: string, expiresAt: number): Promise<st
  * expired expiry. `now` is a parameter so tests need no clock control.
  */
 export async function verifySession(
-	secret: string,
-	cookie: string | undefined,
-	now: number = Date.now()
+  secret: string,
+  cookie: string | undefined,
+  now: number = Date.now(),
 ): Promise<boolean> {
-	if (!secret || !cookie) {
-		return false;
-	}
-	const separator = cookie.indexOf('.');
-	if (separator < 1) {
-		return false;
-	}
-	const expiresRaw = cookie.slice(0, separator);
-	if (!/^\d+$/.test(expiresRaw)) {
-		return false;
-	}
-	const expiresAt = Number(expiresRaw);
-	const expected = await signSession(secret, expiresAt);
-	if (!timingSafeEqual(encoder.encode(expected), encoder.encode(cookie))) {
-		return false;
-	}
-	return expiresAt > now;
+  if (!secret || !cookie) {
+    return false;
+  }
+  const separator = cookie.indexOf(".");
+  if (separator < 1) {
+    return false;
+  }
+  const expiresRaw = cookie.slice(0, separator);
+  if (!/^\d+$/.test(expiresRaw)) {
+    return false;
+  }
+  const expiresAt = Number(expiresRaw);
+  const expected = await signSession(secret, expiresAt);
+  if (!timingSafeEqual(encoder.encode(expected), encoder.encode(cookie))) {
+    return false;
+  }
+  return expiresAt > now;
 }

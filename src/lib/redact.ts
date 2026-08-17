@@ -6,12 +6,12 @@
  * never render in full.
  */
 export function redactEmail(email: string): string {
-	const at = email.lastIndexOf('@');
-	if (at < 1) {
-		return '***';
-	}
-	const local = email.slice(0, at);
-	const domain = email.slice(at + 1);
-	const prefix = local.length > 1 ? local[0] : '';
-	return `${prefix}***@${domain}`;
+  const at = email.lastIndexOf("@");
+  if (at < 1) {
+    return "***";
+  }
+  const local = email.slice(0, at);
+  const domain = email.slice(at + 1);
+  const prefix = local.length > 1 ? local[0] : "";
+  return `${prefix}***@${domain}`;
 }
