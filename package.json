@@ -9,7 +9,7 @@
 		"node": ">=24.13.1"
 	},
 	"scripts": {
-		"prepare": "svelte-kit sync",
+		"prepare": "svelte-kit sync && husky",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "npm run build && wrangler dev",
@@ -32,6 +32,8 @@
 		"eslint-plugin-sort-destructure-keys": "^3.0.0",
 		"eslint-plugin-svelte": "^3.22.0",
 		"globals": "^17.9.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.3.0",
 		"prettier": "^3.9.6",
 		"prettier-plugin-svelte": "^4.1.1",
 		"svelte": "^5.56.8",
