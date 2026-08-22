@@ -3,7 +3,7 @@
 [![CI](https://github.com/andornaut/cloudflare-starter/actions/workflows/test.yml/badge.svg)](https://github.com/andornaut/cloudflare-starter/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-cloudflare-starter is a [SvelteKit](https://svelte.dev/docs/kit) guestbook that runs entirely on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with a [D1](https://developers.cloudflare.com/d1/) database, on free-tier services only
+cloudflare-starter is a [SvelteKit](https://svelte.dev/docs/kit/introduction) guestbook that runs entirely on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with a [D1](https://developers.cloudflare.com/d1/) database, on free-tier services only
 
 ## Features
 
