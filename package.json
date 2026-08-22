@@ -22,7 +22,7 @@
     "clean": "rm -rf .svelte-kit build .wrangler"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260811.1",
+    "@cloudflare/workers-types": "^5.20260815.1",
     "@eslint/js": "^10.0.1",
     "@sveltejs/adapter-cloudflare": "^7.2.9",
     "@sveltejs/kit": "^2.70.2",
