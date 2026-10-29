@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { site } from "#lib/config.js";
+  import { EMAIL_MAX_LENGTH, MESSAGE_MAX_LENGTH } from "#lib/validation.js";
   import { enhance } from "$app/forms";
   import { resolve } from "$app/paths";
-  import { site } from "$lib/config";
-  import { EMAIL_MAX_LENGTH, MESSAGE_MAX_LENGTH } from "$lib/validation";
 
   import type { PageProps } from "./$types";
 

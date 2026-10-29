@@ -1,10 +1,15 @@
 import { error, fail, redirect } from "@sveltejs/kit";
 
-import { site } from "$lib/config";
-import { pageOffset, paginate } from "$lib/paginate";
-import { addEntry, deleteEntry, listPage, updateEntry } from "$lib/server/db";
-import { SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "$lib/server/session";
-import { parsePositiveInt, validateEntry } from "$lib/validation";
+import { site } from "#lib/config.js";
+import { pageOffset, paginate } from "#lib/paginate.js";
+import {
+  addEntry,
+  deleteEntry,
+  listPage,
+  updateEntry,
+} from "#lib/server/db.js";
+import { SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "#lib/server/session.js";
+import { parsePositiveInt, validateEntry } from "#lib/validation.js";
 
 import type { Actions, PageServerLoad, RequestEvent } from "./$types";
 

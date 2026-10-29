@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { site } from "#lib/config.js";
   import { page } from "$app/state";
-  import { site } from "$lib/config";
 
   const { children } = $props();
 

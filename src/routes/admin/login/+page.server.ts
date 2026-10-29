@@ -1,11 +1,11 @@
 import { fail, redirect } from "@sveltejs/kit";
 
-import { signSession, verifySecret } from "$lib/server/auth";
+import { signSession, verifySecret } from "#lib/server/auth.js";
 import {
   SESSION_COOKIE,
   SESSION_COOKIE_OPTIONS,
   SESSION_TTL_MS,
-} from "$lib/server/session";
+} from "#lib/server/session.js";
 
 import type { Actions } from "./$types";
 

@@ -1,7 +1,8 @@
-import { type Handle, redirect } from "@sveltejs/kit";
+import { redirect } from "@sveltejs/kit";
+import type { Handle } from "@sveltejs/kit/hooks";
 
-import { verifySession } from "$lib/server/auth";
-import { SESSION_COOKIE } from "$lib/server/session";
+import { verifySession } from "#lib/server/auth.js";
+import { SESSION_COOKIE } from "#lib/server/session.js";
 
 const LOGIN_ROUTE = "/admin/login";
 
@@ -38,7 +39,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   // Defense in depth behind Svelte's output escaping, not a substitute for it.
   // Every rendered page, error pages included, already carries SvelteKit's own
-  // policy (see svelte.config.js) with the nonce its hydration script needs, and
+  // policy (see vite.config.ts) with the nonce its hydration script needs, and
   // overwriting that would break hydration. What is left is an action's redirect.
   if (!response.headers.has("content-security-policy")) {
     response.headers.set("Content-Security-Policy", FALLBACK_CSP);

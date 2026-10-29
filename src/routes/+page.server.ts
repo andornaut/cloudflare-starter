@@ -1,13 +1,13 @@
 import { fail } from "@sveltejs/kit";
 
-import { site } from "$lib/config";
-import { redactEmail } from "$lib/redact";
-import { addEntry, listEntries } from "$lib/server/db";
+import { site } from "#lib/config.js";
+import { redactEmail } from "#lib/redact.js";
+import { addEntry, listEntries } from "#lib/server/db.js";
 import {
   type FieldErrors,
   type GuestbookInput,
   validateEntry,
-} from "$lib/validation";
+} from "#lib/validation.js";
 
 import type { Actions, PageServerLoad } from "./$types";
 
