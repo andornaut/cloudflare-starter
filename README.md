@@ -78,7 +78,7 @@ Rotate it with `npx wrangler secret put ADMIN_SECRET`. That signs out every open
 ## Developing
 
 Docker 29.9.3 and Make run verification without host dependencies. `make check`
-runs formatting, lint, type checks, unit tests, and the Worker build in isolated
+runs formatting, Markdown, lint, type checks, unit tests, and the Worker build in isolated
 containers. `npm run check`, `npm test`, `npm run lint`, and `npm run build` delegate
 to the corresponding Make targets.
 
