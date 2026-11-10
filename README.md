@@ -77,31 +77,23 @@ Rotate it with `npx wrangler secret put ADMIN_SECRET`. That signs out every open
 
 ## Developing
 
-Docker 29.9.3 and Make run verification without host dependencies. `make check`
-runs formatting, Markdown, lint, type checks, unit tests, and the Worker build in isolated
-containers. `npm run check`, `npm test`, `npm run lint`, and `npm run build` delegate
-to the corresponding Make targets.
+Use `make check` for the complete automation gate in the project's test image.
+It runs formatting, Markdown, lint, type checks, unit tests, and the Worker build.
+
+Native npm commands run locally and do not delegate to Make. Select the Node.js
+version in `.nvmrc` and install the lockfile dependencies with `npm ci`.
 
 ```bash
 make check
-make lint
-make test
-make test TEST_ARGS='src/lib/paginate.test.ts'
-make build
-make check-info
-make exec COMMAND='npm install'
+npm test -- src/lib/paginate.test.ts
+npm run check
+npm run lint
+npm run build
+npm run format
+npm run dev
 ```
 
-Checks use a source snapshot and writable scratch. `make build` also exports
-`.svelte-kit/cloudflare/` for `npm run preview` and deployment. `make exec` permits
-explicit project updates while protecting Git metadata. Internal npm scripts are
-for the container dispatcher.
-
-The native pre-commit hook runs `make staged`, keeping automatic staged fixes and
-partial staging.
-Lint-staged manages Git on the host; Prettier and ESLint run in the project
-container. The hook requires Node and the lockfile's local lint-staged install.
-If container shutdown cannot be confirmed, the workflow preserves the working
-tree and backup stash and blocks its Git cleanup until the writer is resolved.
+The pre-commit hook runs `npx lint-staged --concurrent false` with local Prettier
+and ESLint. It automatically fixes staged files while preserving partial staging.
 
 The suite is unit tests only: the pure functions in `validation.ts`, `paginate.ts`, and `redact.ts`, plus the Web Crypto session code in `server/auth.ts`. The route handlers, the `/admin` gate, and the D1 queries are checked by hand against a dev server.
