@@ -41,24 +41,17 @@ jobs:
           # in .git/config for a later step to read.
           persist-credentials: false
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.1.0
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v5.7.0
         with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
+          version: v29.9.3
 
       # The gate is the whole repo, not the lines a change touched.
-      - name: Type-check
-        run: npm run check
-
       - name: Test
-        run: npm test
+        run: make test
 
       - name: Build
-        run: npm run build
+        run: make build
 
   lint:
     name: Lint
@@ -73,17 +66,13 @@ jobs:
           # in .git/config for a later step to read.
           persist-credentials: false
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.1.0
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v5.7.0
         with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
+          version: v29.9.3
 
       - name: Lint
-        run: npm run lint
+        run: make lint
 
       # The action bundles markdownlint-cli2, so its own tag is the tool pin and
       # Dependabot proposes the bump through the github-actions ecosystem. It

@@ -77,8 +77,8 @@ Rotate it with `npx wrangler secret put ADMIN_SECRET`. That signs out every open
 
 ## Developing
 
-Docker and Make run verification without host dependencies. `make check` runs
-formatting, lint, type checks, unit tests, and the Worker build in isolated
+Docker 29.9.3 and Make run verification without host dependencies. `make check`
+runs formatting, lint, type checks, unit tests, and the Worker build in isolated
 containers. `npm run check`, `npm test`, `npm run lint`, and `npm run build` delegate
 to the corresponding Make targets.
 
@@ -96,5 +96,12 @@ Checks use a source snapshot and writable scratch. `make build` also exports
 `.svelte-kit/cloudflare/` for `npm run preview` and deployment. `make exec` permits
 explicit project updates while protecting Git metadata. Internal npm scripts are
 for the container dispatcher.
+
+The native pre-commit hook runs `make staged`, keeping automatic staged fixes and
+partial staging.
+Lint-staged manages Git on the host; Prettier and ESLint run in the project
+container. The hook requires Node and the lockfile's local lint-staged install.
+If container shutdown cannot be confirmed, the workflow preserves the working
+tree and backup stash and blocks its Git cleanup until the writer is resolved.
 
 The suite is unit tests only: the pure functions in `validation.ts`, `paginate.ts`, and `redact.ts`, plus the Web Crypto session code in `server/auth.ts`. The route handlers, the `/admin` gate, and the D1 queries are checked by hand against a dev server.
