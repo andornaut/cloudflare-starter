@@ -138,8 +138,8 @@ jobs:
             export PATH="/work/node_modules/.bin:${PATH}"
             export HUSKY=0
             npx --no-install svelte-kit sync
-            for script in tests/container/run tests/container/stock tests/container/check-stock; do bash -n "$script"; done
-            for script in tests/container/check tests/container/node tests/container/markdown; do sh -n "$script"; done
+            for script in tests/container/stock tests/container/check-stock; do bash -n "$script"; done
+            for script in tests/container/node tests/container/markdown; do sh -n "$script"; done
             npm run check
             npx --no-install prettier --check .
             npx --no-install eslint --max-warnings 0 .
@@ -154,6 +154,6 @@ jobs:
           stock_run "${markdown_image}" markdown -- /scratch/markdown/node_modules/.bin/markdownlint-cli2
           stock_image shellcheck_image koalaman/shellcheck:v0.11.0
           stock_readonly "${shellcheck_image}" /bin/shellcheck -x -P SCRIPTDIR \
-            tests/container/run tests/container/check tests/container/stock \
+            tests/container/stock \
             tests/container/check-stock tests/container/node tests/container/markdown
           stock_finish
