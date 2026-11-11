@@ -77,14 +77,19 @@ Rotate it with `npx wrangler secret put ADMIN_SECRET`. That signs out every open
 
 ## Developing
 
-Use `make check` for the complete automation gate in the project's test image.
+Use `make check` for the complete automation gate with stock Node.js and ShellCheck
+images. It does not build a project image.
 It runs formatting, Markdown, lint, type checks, unit tests, and the Worker build.
+
+Optional `make build` runs the build checks and exports `.svelte-kit/cloudflare/`.
+Other checks keep generated files in disposable scratch.
 
 Native npm commands run locally and do not delegate to Make. Select the Node.js
 version in `.nvmrc` and install the lockfile dependencies with `npm ci`.
 
 ```bash
 make check
+make build
 npm test -- src/lib/paginate.test.ts
 npm run check
 npm run lint
