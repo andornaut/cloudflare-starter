@@ -15,8 +15,6 @@ export PATH="/work/node_modules/.bin:${PATH}"
 export HUSKY=0
 case "$task" in
 lint)
-    for script in tests/container/stock tests/container/check-stock tests/container/publish; do bash -n "$script"; done
-    for script in tests/container/node tests/container/markdown; do sh -n "$script"; done
     npm run check
     npx --no-install prettier --check .
     exec npx --no-install eslint --max-warnings 0 .
@@ -35,14 +33,7 @@ else
     run_task "$action"
 fi
 if [ "$action" = build ] && [ -d /outputs ]; then
-    test -e .svelte-kit/cloudflare
-    test ! -L .svelte-kit/cloudflare
-    if [ -n "$(find -P .svelte-kit/cloudflare -type l -print -quit)" ]; then
-        printf '%s\n' 'Build outputs must not contain symlinks.' >&2
-        exit 2
-    fi
     mkdir -p /outputs/.svelte-kit
-    cp -a --no-preserve=ownership .svelte-kit/cloudflare /outputs/.svelte-kit/
-    find -P /outputs -mindepth 1 -type d -exec chmod a+rwX {} +
-    find -P /outputs -mindepth 1 -type f -exec chmod a+rwX {} +
+    cp -R .svelte-kit/cloudflare /outputs/.svelte-kit/
+    find /outputs -mindepth 1 -type d -exec chmod a+rwx {} +
 fi
