@@ -30,7 +30,7 @@
     "@sveltejs/adapter-cloudflare": "^8.0.2",
     "@sveltejs/kit": "^3.0.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "eslint": "^10.11.0",
+    "eslint": "^10.14.0",
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "eslint-plugin-sort-destructure-keys": "^3.0.0",
     "eslint-plugin-svelte": "^3.23.0",
