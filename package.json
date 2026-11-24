@@ -46,7 +46,7 @@
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.8",
     "vitest": "^5.1.0",
-    "wrangler": "^4.154.0"
+    "wrangler": "^4.164.0"
   },
   "overrides": {
     "markdownlint-cli2@0.24.0": {
