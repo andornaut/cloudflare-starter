@@ -28,7 +28,7 @@
     "@cloudflare/workers-types": "^5.20261027.1",
     "@eslint/js": "^10.0.1",
     "@sveltejs/adapter-cloudflare": "^8.0.2",
-    "@sveltejs/kit": "^3.0.1",
+    "@sveltejs/kit": "^3.3.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "eslint": "^10.14.0",
     "eslint-plugin-simple-import-sort": "^14.0.0",
