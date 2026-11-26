@@ -14,6 +14,12 @@ updates:
       # unmerged.
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
+  - package-ecosystem: "npm"
+    directory: "/tests/container"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
