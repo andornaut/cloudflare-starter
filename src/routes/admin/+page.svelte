@@ -133,8 +133,10 @@
                   if (!confirm(`Delete entry ${entry.id}?`)) {
                     event.preventDefault();
                   }
-                }}>Delete</button
+                }}
               >
+                Delete
+              </button>
             </form>
           </td>
         </tr>
